@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Therapist Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f8fb;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      width: 80%;
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h2 {
+      color: #007bff;
+      font-size: 28px;
+    }
+
+    p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    .dashboard-section {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e9f7ff;
+      border-radius: 8px;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h3 {
+      color: #0056b3;
+      font-size: 22px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      margin: 10px 0;
+    }
+
+    a {
+      text-decoration: none;
+      background: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      display: inline-block;
+      transition: 0.3s;
+    }
+
+    a:hover {
+      background: #0056b3;
+    }
+
+    .logout {
+      display: block;
+      margin-top: 20px;
+      background: #dc3545;
+      padding: 10px 15px;
+    }
+
+    .logout:hover {
+      background: #c82333;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Welcome, Therapist</h2>
+  <p><strong>Your ID:</strong> <span th:text="${userId}"></span></p>
+  <p><strong>Your Role:</strong> <span th:text="${role}"></span></p>
+
+  <div class="dashboard-section">
+    <h3>Appointments</h3>
+    <ul>
+      <li><a th:href="@{/therapist/appointments}">View My Appointments</a></li>
+    </ul>
+  </div>
+
+  <div class="dashboard-section">
+    <h3>Mental Health Resources</h3>
+    <ul>
+      <li><a th:href="@{/therapist/resources/upload}">Upload New Resource</a></li>
+    </ul>
+  </div>
+
+  <a class="logout" th:href="@{/logout}">Logout</a>
+</div>
+
+</body>
+</html>

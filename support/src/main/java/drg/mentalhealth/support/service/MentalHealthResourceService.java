@@ -1,0 +1,44 @@
+package drg.mentalhealth.support.service;
+
+import drg.mentalhealth.support.model.MentalHealthResource;
+import drg.mentalhealth.support.repository.MentalHealthResourceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class MentalHealthResourceService {
+    @Autowired
+    private MentalHealthResourceRepository repository;
+
+    // Fetch all resources
+    public List<MentalHealthResource> getAllResources() {
+        return repository.findAll();
+    }
+
+    // Fetch a resource by ID
+    public Optional<MentalHealthResource> getResourceById(Long id) {
+        return repository.findById(id);
+    }
+
+    // Save a new resource
+    public MentalHealthResource saveResource(MentalHealthResource resource) {
+        return repository.save(resource);
+    }
+
+    // Update an existing resource
+    public MentalHealthResource updateResource(Long id, MentalHealthResource updatedResource) {
+        MentalHealthResource resource = repository.findById(id).orElseThrow(() -> new RuntimeException("Resource not found"));
+        resource.setTitle(updatedResource.getTitle());
+        resource.setContent(updatedResource.getContent());
+        resource.setResourceType(updatedResource.getResourceType());
+        return repository.save(resource);
+    }
+
+    // Delete a resource
+    public void deleteResource(Long id) {
+        repository.deleteById(id);
+    }
+}

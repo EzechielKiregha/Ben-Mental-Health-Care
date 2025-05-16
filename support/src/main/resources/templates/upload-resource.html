@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Mental Health Resource</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f8fb;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      width: 50%;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h2 {
+      color: #007bff;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    label {
+      font-size: 18px;
+      margin: 10px 0 5px;
+      align-self: flex-start;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .message {
+      margin-top: 15px;
+      font-size: 16px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Upload Mental Health Resource</h2>
+  <form th:action="@{/therapist/resources/upload}" method="post" th:object="${resource}">
+    <label for="title">Title:</label>
+    <input type="text" id="title" th:field="*{title}" required>
+
+    <label for="content">Content:</label>
+    <textarea id="content" th:field="*{content}" required></textarea>
+
+    <label for="resourceType">Resource Type:</label>
+    <select id="resourceType" name="resourceType">
+      <option th:each="type : ${T(drg.mentalhealth.support.model.ResourceType).values()}"
+              th:value="${type}" th:text="${type}"></option>
+    </select>
+
+    <button type="submit">Upload</button>
+  </form>
+
+  <p th:if="${message}" th:text="${message}" class="message"></p>
+</div>
+
+</body>
+</html>

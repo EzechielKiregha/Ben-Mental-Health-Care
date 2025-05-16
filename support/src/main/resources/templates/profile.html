@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Profile</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Profile</h2>
+    <form action="/profile/update" method="post">
+        <label>Full Name:</label>
+        <input type="text" name="fullName" th:value="${user.fullName}" required>
+
+        <label>Email:</label>
+        <input type="email" name="email" th:value="${user.email}" required>
+
+        <button type="submit">Update</button>
+    </form>
+    <a href="/">Back to Home</a>
+</div>
+</body>
+</html>
