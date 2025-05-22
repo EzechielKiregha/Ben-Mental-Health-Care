@@ -1,5 +1,6 @@
 package drg.mentalhealth.support.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 // import com.twilio.Twilio;
 // import com.twilio.rest.api.v2010.account.Message;
@@ -12,8 +13,11 @@ import java.util.Random;
 @Service
 public class OTPService {
 
-    public static final String ACCOUNT_SID = "ACbf70e09e11b2179b7808e8289e5c663e";
-    public static final String AUTH_TOKEN = "2cccf44898f91657ff3590720f10bd7f";
+    @Value("${twilio.account.sid}")
+    public static String ACCOUNT_SID;
+
+    @Value("${twilio.auth.token}")
+    public static String AUTH_TOKEN;
     // VA8830b100b910906dbad8bacf59ae25b0
 
     private final Map<String, Integer> otpData = new HashMap<>();
