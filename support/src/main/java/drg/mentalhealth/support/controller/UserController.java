@@ -1,6 +1,8 @@
 package drg.mentalhealth.support.controller;
 
+import drg.mentalhealth.support.model.Role;
 import drg.mentalhealth.support.model.User;
+import drg.mentalhealth.support.repository.RoleRepository;
 import drg.mentalhealth.support.service.UserService;
 import drg.mentalhealth.support.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -21,6 +24,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -40,27 +46,22 @@ public class UserController {
         if (role == null || role.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Role is required");
         }
-        Role role = roleRepository.findByName(role);
-        if (role == null) {
+        Optional<Role> r = roleRepository.findByName(role);
+        if (!r.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Role not found");
         }
         
-        return ResponseEntity.ok(userService.getUserByRole(body.getRole()));
+        return ResponseEntity.ok(userService.getUserByRole(r.get()));
     }
     
-    @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> whoAmI(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @PostMapping("/me")
+    public ResponseEntity<?> whoAmI(@RequestParam Long id) {
+        Optional<User> user = userService.getUserById(id);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-        String token = header.substring(7);
-        String email = jwtUtil.extractEmail(token);
-        Map<String, Object> info = Map.of(
-            "email", email,
-            "valid", jwtUtil.validateToken(token, userService.getUserByEmail(email).get())
-        );
-        return ResponseEntity.ok(info);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

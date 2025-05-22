@@ -2,7 +2,10 @@ package drg.mentalhealth.support.util;
 
 import drg.mentalhealth.support.model.Role;
 import drg.mentalhealth.support.model.User;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,12 +33,13 @@ public class JwtUtil {
 
     public String generateToken(User user) {
         return Jwts.builder()
-                .subject(user.getEmail())
+                .setSubject(user.getEmail())
                 .claim("role", user.getRoles().stream().map(Role::getName).toList())
                 .claim("userId", user.getId())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(key, Jwts.SIG.HS256)
+                .claim("phoneNumber", user.getPhoneNumber())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(SignatureAlgorithm.HS256, key)
                 .compact();
     }
 
@@ -58,9 +62,8 @@ public class JwtUtil {
 
     private Claims parseClaims(String token) {
         return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

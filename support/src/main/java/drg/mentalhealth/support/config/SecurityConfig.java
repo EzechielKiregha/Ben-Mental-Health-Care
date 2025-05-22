@@ -45,7 +45,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/admin/**").permitAll()
                     .requestMatchers("/api/therapists-profiles/**").permitAll()
                     .requestMatchers("/api/resources/**").permitAll()
-                    .requestMatchers("/api/faq/**").permitAll()
+                    .requestMatchers("/api/users/**").permitAll()
                     .requestMatchers("/api/self-check/**").permitAll()
 
 

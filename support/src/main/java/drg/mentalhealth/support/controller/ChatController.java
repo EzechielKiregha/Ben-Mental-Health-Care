@@ -23,20 +23,25 @@ public class ChatController {
 
     @PostMapping("/start")
     public ChatSession startChat(@RequestParam Long userId, @RequestParam(required = false) Long therapistId) {
-        return chatSessionService.startSession(userId, therapistId);
+        ChatSession session = chatSessionService.resumeChatSession(userId, therapistId);
+        if (session == null) {
+            session = chatSessionService.startSession(userId, therapistId);
+        }
+        return session;
     }
 
     @PostMapping("/{sessionId}/message")
     public ChatMessage sendMessage(@PathVariable Long sessionId, @RequestParam ChatMessage.Sender sender, @RequestParam String text) {
-        ChatSession session = new ChatSession(); // Replace with actual session retrieval logic
-        session.setId(sessionId);
+        ChatSession session = chatSessionService.getChatSession(sessionId); // Replace with actual session retrieval logic
         return chatMessageService.sendMessage(session, sender, text);
     }
 
     @GetMapping("/{sessionId}")
     public List<ChatMessage> getMessageHistory(@PathVariable Long sessionId) {
-        ChatSession session = new ChatSession(); // Replace with actual session retrieval logic
-        session.setId(sessionId);
+        ChatSession session = chatSessionService.getChatSession(sessionId); // Replace with actual session retrieval logic
+        if (session == null) {
+            throw new RuntimeException("Session not found");
+        }
         return chatMessageService.getMessageHistory(session);
     }
 }

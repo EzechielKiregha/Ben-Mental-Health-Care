@@ -4,9 +4,6 @@ import drg.mentalhealth.support.model.User;
 import drg.mentalhealth.support.service.AuthService;
 import drg.mentalhealth.support.service.OTPService;
 import drg.mentalhealth.support.service.UserService;
-
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,48 +32,32 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/verify-otp/{email}/{otp}")
-    public ResponseEntity<?> verifyOtP(@PathVariable String email, @PathVariable String genOTP) {
-        Optional<User> user = userService.getUserByEmail(email);
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtP(@RequestParam String phoneNumber, @RequestParam String inputedOTP) {
+        if(otpService.validateOTP(phoneNumber, Integer.parseInt(inputedOTP)))
+            return ResponseEntity.ok("{\"message\": \"OTP verified successfully\"}");
+        return ResponseEntity.status(400).body("{\"error\": \"Invalid OTP\"}");
+    }
 
-        if (user.isPresent() && genOTP.equalsIgnoreCase("genOTP")) {
-            User userData = user.get();
-            if (otpService.validateOTP(userData.getEmail(), Integer.parseInt(genOTP))) {
-                userData.setEnabled(true);
-                userData.setOtpString(0); // Clear OTP after successful verification
-                userService.updateUser(userData);
-                otpService.clearOTP(userData.getEmail());
-                return ResponseEntity.ok("{\"message\": \"OTP verified successfully\"}");
-            } else {
-                return ResponseEntity.status(400).body("{\"error\": \"Invalid OTP\"}");
-            }
-        } else {
-            return ResponseEntity.status(404).body("{\"error\": \"User not found\"}");
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> sentOTP(@RequestParam String phoneNumber) {
+        try {
+            Integer code = otpService.sendOtpViaSMS(phoneNumber);
+            System.out.println("OTP sent to " + phoneNumber + ": " + code);
+            return ResponseEntity.ok("{\"sentTo\": \""+phoneNumber+"\", \"code\": \"" + code + "\"}");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("{\"error\": \"Failed to send OTP\"}");
         }
-
-        
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestParam String email, @RequestParam String password) {
         try {
             String token = authService.authenticate(email, password);
-            Optional<User> user = userService.getUserByEmail(email);
-            if (user.isPresent() ){
-                User userData = user.get();
-                Integer otp = otpService.generateOTP(userData.getEmail());
-                userData.setOtpString(otp);
-                if(otpService.sendOTP(userData.getEmail(), "Verification Code | Ben Mental Health Care", "Your Verification Code is: " + otp)){
-                    
-                    userService.updateUser(userData);
-                    return ResponseEntity.ok("{\"token\": \"" + token + "\"}");
-                }
-            } else
-                return ResponseEntity.status(400).body("{\"error\": \"User not found or OTP generation failed\"}");
-
+            // System.out.println("Token: " + token);
             return ResponseEntity.ok("{\"token\": \"" + token + "\"}");
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body("{\"WHYYYYYYYY\": \"" + e.getMessage() + "\"}");
+            return ResponseEntity.status(401).body("{\"[ERROR SIGNIN]\": \"" + e.getMessage() + "\"}");
         }
     }
 

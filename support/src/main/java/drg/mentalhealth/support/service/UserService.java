@@ -113,4 +113,9 @@ public class UserService {
         }
         return false;
     }
+
+    public Object getUserByRole(Role role) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUserByRole'");
+    }
 }
