@@ -33,4 +33,39 @@ public class ChatSessionService {
         session.setStartedAt(LocalDateTime.now());
         return chatSessionRepository.save(session);
     }
+
+    public ChatSession resumeChatSession(Long userId, Long therapistId) {
+        // user.getRoles().stream().map(Role::getName).toList()
+
+        List<ChatSession> allSessions = chatSessionRepository.findAll();
+
+        Stream<ChatSession> chatSession = allSessions.stream().map(t -> {
+            User therapist = t.getTherapist();
+            User patient = t.getUser();
+            
+            if (therapist.getId().equals(therapistId) && patient.getId().equals(userId)) {
+                return t;
+            }
+            return null;
+        });
+
+        Optional<ChatSession> session = chatSession.findAny();
+        if (session.isPresent()) {
+            return session.get();
+        } else {
+            return null;
+        }
+    }
+
+    public List<ChatSession> getAllSessionsByUserId(Long userId){
+        return chatSessionRepository.findAllByUserId(userId);
+    }
+
+    public ChatSession getChatSession(long id){
+        Optional<ChatSession> s = chatSessionRepository.findById(id);
+        if (s.isPresent()) {
+            return s.get();
+        }
+        return null;
+    }
 }
