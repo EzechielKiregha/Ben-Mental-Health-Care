@@ -4,6 +4,7 @@ import drg.mentalhealth.support.dto.SelfCheckRequest;
 import drg.mentalhealth.support.dto.SelfCheckResponse;
 import drg.mentalhealth.support.model.SelfCheckResult;
 import drg.mentalhealth.support.model.User;
+import drg.mentalhealth.support.repository.MentalHealthResourceRepository;
 import drg.mentalhealth.support.repository.SelfCheckResultRepository;
 import drg.mentalhealth.support.repository.UserRepository;
 
@@ -25,6 +26,9 @@ public class SelfCheckResultService {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private MentalHealthResourceRepository resourceRepository;
 
     public SelfCheckResponse saveResult(SelfCheckRequest req) {
         User user = userRepo.findById(req.usedId())
@@ -53,45 +57,16 @@ public class SelfCheckResultService {
 
     private List<Long> computeRecommendations(List<Integer> answers) {
         Set<Long> recs = new LinkedHashSet<>();
-
-        // Q1 (index 0): interest/pleasure → suggest resources 1, 3
-        if (answers.get(0) >= 2) {              // “More than half the days” or “Nearly every day”
-            recs.add(1L);
-            recs.add(3L);
+        for (int i = 0; i < answers.size(); i++) {
+          if (answers.get(i) >= 2) {
+            // fetch all resources tagged for question i
+            var list = resourceRepository.findByQuestionIndex(i);
+            list.forEach(r -> recs.add(r.getId()));
+          }
         }
-
-        // Q2 (index 1): feeling down → suggest resource 2
-        if (answers.get(1) >= 2) {
-            recs.add(2L);
-        }
-
-        // Q3 (index 2): sleep trouble → suggest resource 4
-        if (answers.get(2) >= 2) {
-            recs.add(4L);
-        }
-
-        // Q4 (index 3): low energy → suggest resource 5
-        if (answers.get(3) >= 2) {
-            recs.add(5L);
-        }
-
-        // Q5 (index 4): appetite changes → suggest resource 6
-        if (answers.get(4) >= 2) {
-            recs.add(6L);
-        }
-
-        // Q6 (index 5): concentration → suggest resource 7
-        if (answers.get(5) >= 2) {
-            recs.add(7L);
-        }
-
-        // Q7 (index 6): anxiety → suggest resource 8
-        if (answers.get(6) >= 2) {
-            recs.add(8L);
-        }
-
         return new ArrayList<>(recs);
     }
+    
 
     public List<SelfCheckResult> getResultsByUserId(Long userId) {
         return selfCheckResultRepository.findByUserId(userId);

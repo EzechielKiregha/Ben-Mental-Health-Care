@@ -24,6 +24,9 @@ public class MentalHealthResource {
     @Column(nullable = false)
     private ResourceType resourceType;
 
+    @Column(nullable=false)
+    private Integer questionIndex;
+
     @ManyToOne
     @JoinColumn(name = "therapist_id")
     @JsonBackReference("therapist-resources") // Matches User's "therapist-resources"
