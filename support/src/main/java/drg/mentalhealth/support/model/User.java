@@ -92,6 +92,14 @@ public class User {
         this.password = password;
         this.roles = roles;
     }
+
+    public static User fromEntity(User user) {
+        // Assuming a simple copy constructor logic
+        User newUser = new User();
+        // Copy fields from the input user to the new user
+        // Example: newUser.setField(user.getField());
+        return newUser;
+    }
 }
 
 

@@ -4,8 +4,6 @@ import drg.mentalhealth.support.model.Role;
 import drg.mentalhealth.support.model.User;
 import drg.mentalhealth.support.repository.RoleRepository;
 import drg.mentalhealth.support.service.UserService;
-import drg.mentalhealth.support.util.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -28,17 +25,18 @@ public class UserController {
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<?> createUser(@RequestBody User body) {
-        return ResponseEntity.ok(body);
+        User user = userService.createUser(body);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists");
+        }
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/role")

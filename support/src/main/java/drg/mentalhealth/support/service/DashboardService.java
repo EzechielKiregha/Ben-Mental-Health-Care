@@ -3,6 +3,7 @@ package drg.mentalhealth.support.service;
 import drg.mentalhealth.support.dto.DashboardStatsDto;
 import drg.mentalhealth.support.model.ResourceType;
 import drg.mentalhealth.support.model.Status;
+import drg.mentalhealth.support.model.User;
 import drg.mentalhealth.support.repository.AppointmentRepository;
 import drg.mentalhealth.support.repository.MentalHealthResourceRepository;
 import drg.mentalhealth.support.repository.SelfCheckResultRepository;
@@ -85,4 +86,12 @@ public class DashboardService {
         }
         return result;
     }
+
+    public List<User> findPatients() {
+        return userRepo.findAllByRoles_Name("PATIENT")
+                       .stream()
+                       .map(User::fromEntity)
+                       .toList();
+    }
+    
 }

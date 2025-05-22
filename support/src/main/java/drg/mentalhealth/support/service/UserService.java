@@ -27,6 +27,26 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public User createUser(User user) {
+        // Check if the user already exists
+        List<Role> roles = roleRepo.findAllById(user.getRoleIds());
+        if (roles.size() != user.getRoleIds().size()) {
+            throw new IllegalArgumentException("One or more roles not found");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setEnabled(false);
+        user.setRoles(new HashSet<>(roles));
+
+        // Check if the user already exists
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("User already exists");
+        }
+        // Save the new user
+        User savedUser = userRepository.save(user);
+        // Return the token
+        return userRepository.save(savedUser);
+    }
+
     // Register a new user and return a token
     public String registerNewUser(User user) {
 

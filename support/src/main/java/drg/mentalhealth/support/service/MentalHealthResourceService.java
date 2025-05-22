@@ -1,8 +1,10 @@
 package drg.mentalhealth.support.service;
 
 import drg.mentalhealth.support.model.MentalHealthResource;
+import drg.mentalhealth.support.model.ResourceType;
 import drg.mentalhealth.support.repository.MentalHealthResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +27,18 @@ public class MentalHealthResourceService {
 
     // Save a new resource
     public MentalHealthResource saveResource(MentalHealthResource resource) {
+        if (resource.getResourceType().equals(ResourceType.ARTICLE)){
+            resource.setResourceType(ResourceType.ARTICLE);
+        }
+        else if (resource.getResourceType().equals(ResourceType.EXERCISE)){
+            resource.setResourceType(ResourceType.EXERCISE);
+        }
+        else if (resource.getResourceType().equals(ResourceType.GUIDE)){
+            resource.setResourceType(ResourceType.GUIDE);
+        }
+        else {
+            throw new IllegalArgumentException("Invalid resource type");
+        }
         return repository.save(resource);
     }
 

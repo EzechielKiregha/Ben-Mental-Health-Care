@@ -1,6 +1,7 @@
 package drg.mentalhealth.support.controller;
 
 import drg.mentalhealth.support.dto.DashboardStatsDto;
+import drg.mentalhealth.support.model.User;
 import drg.mentalhealth.support.service.DashboardService;
 import drg.mentalhealth.support.util.getLoggedUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,4 +59,12 @@ public class DashboardController {
         List<Map<String,Object>> data = dashboardService.monthlyAppointmentTrends(months);
         return ResponseEntity.ok(data);
     }
+
+    // returns a list of all users with the PATIENT role
+    @GetMapping("/patients")
+    public ResponseEntity<List<User>> getPatients() {
+        List<User> pts = dashboardService.findPatients();
+        return ResponseEntity.ok(pts);
+    }
+
 }
