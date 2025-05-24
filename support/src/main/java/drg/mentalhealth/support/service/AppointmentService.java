@@ -6,6 +6,7 @@ import drg.mentalhealth.support.model.User;
 import drg.mentalhealth.support.repository.AppointmentRepository;
 import drg.mentalhealth.support.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,13 +14,12 @@ import java.util.List;
 
 @Service
 public class AppointmentService {
-    private final AppointmentRepository appointmentRepository;
-    private final UserRepository userRepository;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository) {
-        this.appointmentRepository = appointmentRepository;
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Fetch appointments by user ID
     public List<Appointment> getAppointmentsByUserId(Long userId) {

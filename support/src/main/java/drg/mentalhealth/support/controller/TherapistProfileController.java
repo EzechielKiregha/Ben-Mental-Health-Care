@@ -1,12 +1,16 @@
 package drg.mentalhealth.support.controller;
 
 import drg.mentalhealth.support.model.TherapistProfile;
+import drg.mentalhealth.support.model.User;
 import drg.mentalhealth.support.service.TherapistProfileService;
+import drg.mentalhealth.support.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -15,29 +19,44 @@ public class TherapistProfileController {
     @Autowired
     private TherapistProfileService service;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping
     public List<TherapistProfile> listAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TherapistProfile> getById(@PathVariable Long id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        if (service.findByUserId(id) == null) {
+            return ResponseEntity.ok().body("{\"message\": \"NO FOUND\"}");
+        }
+        return ResponseEntity.ok(service.findByUserId(id));
     }
 
     @PostMapping
-    public TherapistProfile create(@RequestBody TherapistProfile profile) {
+    public TherapistProfile create(@RequestBody TherapistProfile profile, @RequestParam Long userId) {
+        Optional<User> user = userService.getUserById(userId);
+        if (user.isPresent()) {
+            profile.setUser(user.get());
+        } else {
+            throw new RuntimeException("User not found");
+        }
         return service.save(profile);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TherapistProfile> update(@PathVariable Long id, @RequestBody TherapistProfile profile) {
-        if (!service.findById(id).isPresent()) {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{userId}")
+    public ResponseEntity<TherapistProfile> update(@PathVariable Long userId, @RequestBody TherapistProfile profile) {
+        if (service.findByUserId(userId) == null) {
+            return ResponseEntity.ok(create(profile, userId));
         }
-        profile.setId(id);
+        Optional<User> user = userService.getUserById(userId);
+        if (user.isPresent()) {
+            profile.setUser(user.get());
+        } else {
+            throw new RuntimeException("User not found");
+        }
         return ResponseEntity.ok(service.save(profile));
     }
 

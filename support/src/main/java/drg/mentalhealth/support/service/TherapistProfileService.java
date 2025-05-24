@@ -17,6 +17,10 @@ public class TherapistProfileService {
         return repository.findAll();
     }
 
+    public TherapistProfile findByUserId(Long userId) {
+        return repository.findByUserId(userId);
+    }
+
     public Optional<TherapistProfile> findById(Long id) {
         return repository.findById(id);
     }

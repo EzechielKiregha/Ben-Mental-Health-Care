@@ -4,6 +4,7 @@ import drg.mentalhealth.support.model.*;
 import drg.mentalhealth.support.repository.AppointmentRepository;
 import drg.mentalhealth.support.repository.UserRepository;
 
+import drg.mentalhealth.support.service.AppointmentService;
 import drg.mentalhealth.support.util.getLoggedUser;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -13,10 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api/appointment")
+@RequestMapping("/api/appointments")
 public class AppointmentController {
 
     @Autowired
@@ -27,25 +29,28 @@ public class AppointmentController {
     @Autowired
     private getLoggedUser loggedUser;
 
+    @Autowired
+    private AppointmentService appointmentService;
+
     @GetMapping
-    public ResponseEntity<?> viewAppointments(HttpServletRequest request) {
-
-        User user = loggedUser.CurrentLoggedInUser(request);
-        Long userId = user.getId();
-
-        if (userId == null) return ResponseEntity.status(401).body("{\"error\": \"Unauthorized\"}");
-
-        boolean isPatient = user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_PATIENT"));
-        boolean isTherapist = user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_THERAPIST"));
+    public ResponseEntity<?> viewAppointments(HttpServletRequest request, @RequestParam long userId) {
+        
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(404).body("{\"error\": \"User not found\"}");
+        }
+        User user = optionalUser.get();
+        boolean isPatient = user.getRoles().stream().anyMatch(role -> role.getName().equals("PATIENT"));
+        boolean isTherapist = user.getRoles().stream().anyMatch(role -> role.getName().equals("THERAPIST"));
 
         List<Appointment> appointments;
 
         if (isPatient) {
-            appointments = appointmentRepository.findByUserId(userId);
+            appointments = appointmentService.getAppointmentsByUserId(userId);
         } else if (isTherapist) {
-            appointments = appointmentRepository.findByTherapistId(userId);
+            appointments = appointmentService.getAppointmentsByTherapistId(userId);
         } else {
-            return ResponseEntity.status(403).body("{\"error\": \"Forbidden\"}");
+            return ResponseEntity.ok().body("{\"error\": \"NO FOUND\"}");
         }
 
         return ResponseEntity.ok(appointments);
@@ -103,7 +108,7 @@ public class AppointmentController {
             return ResponseEntity.status(403).body("{\"error\": \"Forbidden\"}");
         }
 
-        appointmentRepository.delete(appointment);
+        appointmentService.deleteAppointment(id);
         return ResponseEntity.ok("{\"message\": \"Appointment deleted successfully\"}");
     }
 }
