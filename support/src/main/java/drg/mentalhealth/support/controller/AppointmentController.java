@@ -2,17 +2,19 @@ package drg.mentalhealth.support.controller;
 
 import drg.mentalhealth.support.model.*;
 import drg.mentalhealth.support.repository.AppointmentRepository;
-import drg.mentalhealth.support.repository.UserRepository;
+
 
 import drg.mentalhealth.support.service.AppointmentService;
-import drg.mentalhealth.support.util.getLoggedUser;
-import jakarta.servlet.http.HttpServletRequest;
+import drg.mentalhealth.support.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,21 +25,20 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
-    @Autowired
-    private UserRepository userRepository;
+
 
     @Autowired
-    private getLoggedUser loggedUser;
+    private UserService userService;
 
     @Autowired
     private AppointmentService appointmentService;
 
     @GetMapping
-    public ResponseEntity<?> viewAppointments(HttpServletRequest request, @RequestParam long userId) {
+    public ResponseEntity<?> viewAppointments(@RequestParam long userId) {
         
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(404).body("{\"error\": \"User not found\"}");
+        Optional<User> optionalUser = userService.getUserById(userId);
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.ok().body("{\"message\":\"Patient ID Is Missing\"}");
         }
         User user = optionalUser.get();
         boolean isPatient = user.getRoles().stream().anyMatch(role -> role.getName().equals("PATIENT"));
@@ -57,17 +58,29 @@ public class AppointmentController {
     }
 
     @PostMapping("/book")
-    public ResponseEntity<?> bookAppointment(@RequestParam Long therapistId, @RequestParam String appointmentTime, HttpServletRequest request) {
-        User user = loggedUser.CurrentLoggedInUser(request);
-        Long userId = user.getId();
-        if (userId == null) return ResponseEntity.status(401).body("{\"error\": \"Unauthorized\"}");
+    public ResponseEntity<?> bookAppointment(@RequestParam Long userId, @RequestParam Long therapistId, @RequestParam String appointmentTime) {
+        Optional<User> user = userService.getUserById(userId);
+        if (!user.isPresent()) {
+            return ResponseEntity.ok().body("{\"message\":\"Patient ID Is Missing\"}");
+        }
 
-        User therapist = userRepository.findById(therapistId).orElseThrow();
-        LocalDateTime dateTime = LocalDateTime.parse(appointmentTime);
+        Optional<User> therapist = userService.getUserById(therapistId);
+        if (!therapist.isPresent()) {
+            return ResponseEntity.ok().body("{\"message\":\"Therapist ID Is Missing\"}");
+        }
+
+        // Define a formatter to parse the ISO-8601 string with timezone
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        LocalDateTime dateTime;
+        try {
+            dateTime = ZonedDateTime.parse(appointmentTime, formatter).toLocalDateTime();
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body("{\"message\":\"Invalid date format. Please use ISO-8601 format with timezone.\"}");
+        }
 
         Appointment appointment = new Appointment();
-        appointment.setUser(user);
-        appointment.setTherapist(therapist);
+        appointment.setUser(user.get());
+        appointment.setTherapist(therapist.get());
         appointment.setAppointmentTime(dateTime);
         appointment.setStatus(Status.SCHEDULED);
 
@@ -76,11 +89,11 @@ public class AppointmentController {
     }
 
     @PostMapping("/update-status")
-    public ResponseEntity<?> updateAppointmentStatus(@RequestParam Long appointmentId, @RequestParam Status status, HttpServletRequest request) {
-        User user = loggedUser.CurrentLoggedInUser(request);
-        Long therapistId = user.getId();
-        if (therapistId == null) return ResponseEntity.status(401).body("{\"error\": \"Unauthorized\"}");
-
+    public ResponseEntity<?> updateAppointmentStatus(@RequestParam Long appointmentId, @RequestParam Status status, @RequestParam Long userId) {
+        Optional<User> user = userService.getUserById(userId);
+        if (!user.isPresent()) {
+            return ResponseEntity.ok().body("{\"message\":\"Patient ID Is Missing\"}");
+        }
         Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow();
         if (status.equals(Status.SCHEDULED)){
             appointment.setStatus(Status.SCHEDULED);
@@ -98,11 +111,11 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAppointment(@PathVariable Long id, HttpServletRequest request) {
-        User user = loggedUser.CurrentLoggedInUser(request);
-        Long userId = user.getId();
-        if (userId == null) return ResponseEntity.status(401).body("{\"error\": \"Unauthorized\"}");
-
+    public ResponseEntity<?> deleteAppointment(@PathVariable Long id, @RequestParam Long userId) {
+        Optional<User> user = userService.getUserById(userId);
+        if(!user.isPresent()){
+            ResponseEntity.ok().body("{\"message\":\"Patient ID Is Missing\"}");
+        }
         Appointment appointment = appointmentRepository.findById(id).orElseThrow();
         if (!appointment.getUser().getId().equals(userId)) {
             return ResponseEntity.status(403).body("{\"error\": \"Forbidden\"}");
