@@ -19,11 +19,9 @@ public class ChatSessionService {
     @Autowired
     private UserRepository userRepository;
 
-    private final ChatSessionRepository chatSessionRepository;
+    @Autowired
+    private ChatSessionRepository chatSessionRepository;
 
-    public ChatSessionService(ChatSessionRepository chatSessionRepository) {
-        this.chatSessionRepository = chatSessionRepository;
-    }
 
     public ChatSession startSession(Long userId, Long therapistId) {
         ChatSession session = new ChatSession();
@@ -38,7 +36,6 @@ public class ChatSessionService {
     }
 
     public ChatSession resumeChatSession(Long userId, Long therapistId) {
-        // user.getRoles().stream().map(Role::getName).toList()
 
         List<ChatSession> allSessions = chatSessionRepository.findAll();
 
