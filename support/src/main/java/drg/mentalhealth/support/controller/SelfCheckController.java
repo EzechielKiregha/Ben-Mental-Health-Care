@@ -23,8 +23,8 @@ public class SelfCheckController {
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public SelfCheckResponse saveResult(@RequestBody SelfCheckRequest req) {
-        return selfCheckResultService.saveResult(req);
+    public SelfCheckResponse saveResult(@RequestBody SelfCheckRequest req, @RequestParam  Long userId) {
+        return selfCheckResultService.saveResult(req, userId);
     }
 
     @GetMapping("/user/{userId}")

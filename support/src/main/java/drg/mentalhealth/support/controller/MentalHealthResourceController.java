@@ -1,9 +1,7 @@
 package drg.mentalhealth.support.controller;
 
 import drg.mentalhealth.support.model.MentalHealthResource;
-import drg.mentalhealth.support.model.ResourceType;
 import drg.mentalhealth.support.model.User;
-import drg.mentalhealth.support.repository.MentalHealthResourceRepository;
 import drg.mentalhealth.support.service.MentalHealthResourceService;
 import drg.mentalhealth.support.service.UserService;
 

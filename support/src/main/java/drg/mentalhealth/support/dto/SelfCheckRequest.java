@@ -5,7 +5,8 @@ import java.util.List;
 
 public record SelfCheckRequest( 
   Long usedId,
-  List<Long> answers,
+  Integer score,
+  List<Integer> answers,
   Instant takenAt
 ) {
 }

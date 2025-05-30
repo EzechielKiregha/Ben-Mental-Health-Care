@@ -39,26 +39,31 @@ public class ChatSessionService {
 
         List<ChatSession> allSessions = chatSessionRepository.findAll();
 
-        Stream<ChatSession> chatSession = allSessions.stream().map(t -> {
-            User therapist = t.getTherapist();
-            User patient = t.getUser();
-            
-            if (therapist.getId().equals(therapistId) && patient.getId().equals(userId)) {
-                return t;
-            }
-            return null;
-        });
+        if (allSessions.size() != 0){
 
-        Optional<ChatSession> session = chatSession.findAny();
-        if (session.isPresent()) {
-            return session.get();
-        } else {
-            return null;
+            Optional<ChatSession> chatSess = allSessions.stream()
+                .filter(
+                chatSession -> chatSession.getTherapist().getId().equals(therapistId) && chatSession.getUser().getId().equals(userId))
+                .findAny();
+
+                if (chatSess.isPresent()) {
+                    return chatSess.get();
+                } else {
+                    return null;
+                }
         }
+
+        return null;
     }
 
     public List<ChatSession> getAllSessionsByUserId(Long userId){
-        return chatSessionRepository.findAllByUserId(userId);
+
+        List<ChatSession> chatSess = chatSessionRepository.findAll();
+
+        List<ChatSession> chatSessions = chatSess.stream()
+            .filter(chatS -> chatS.getUser().getId().equals(userId))
+            .collect(java.util.stream.Collectors.toList());
+        return chatSessions;
     }
 
     public ChatSession getChatSession(long id){

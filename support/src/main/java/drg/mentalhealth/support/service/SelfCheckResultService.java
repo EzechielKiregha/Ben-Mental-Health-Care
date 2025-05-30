@@ -30,25 +30,28 @@ public class SelfCheckResultService {
     @Autowired
     private MentalHealthResourceRepository resourceRepository;
 
-    public SelfCheckResponse saveResult(SelfCheckRequest req) {
-        User user = userRepo.findById(req.usedId())
+    public SelfCheckResponse saveResult(SelfCheckRequest req, Long userId) {
+        User user = userRepo.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         SelfCheckResult entity = new SelfCheckResult();
         entity.setUser(user);
-        entity.setScore(req.answers().stream().mapToInt(Long::intValue).sum());
+        entity.setScore(req.score());
         try {
             entity.setAnswersJson(new ObjectMapper().writeValueAsString(req.answers()));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error processing JSON", e);
         }
+        entity.setAnswers(req.answers());
         entity.setTakenAt(req.takenAt());
-        // 1) Save the result entity as you do now
-        SelfCheckResult saved = selfCheckResultRepository.save(entity);
 
         // 2) Compute recommendations
-        List<Integer> answers = saved.getAnswers();
+        List<Integer> answers = entity.getAnswers();
         List<Long> recommendedResourceIds = computeRecommendations(answers);
+
+        // 1) Save the result entity as you do now
+        entity.setRecommendedResourceIds(recommendedResourceIds);
+        SelfCheckResult saved = selfCheckResultRepository.save(entity);
 
         SelfCheckResponse out = new SelfCheckResponse(saved.getId(), saved.getScore(), recommendedResourceIds);
 
@@ -58,11 +61,11 @@ public class SelfCheckResultService {
     private List<Long> computeRecommendations(List<Integer> answers) {
         Set<Long> recs = new LinkedHashSet<>();
         for (int i = 0; i < answers.size(); i++) {
-          if (answers.get(i) >= 2) {
-            // fetch all resources tagged for question i
-            var list = resourceRepository.findByQuestionIndex(i);
-            list.forEach(r -> recs.add(r.getId()));
-          }
+            if (answers.get(i) >= 2) {
+                // fetch all resources tagged for question i
+                var list = resourceRepository.findByQuestionIndex(i);
+                list.forEach(r -> recs.add(r.getId()));
+            }
         }
         return new ArrayList<>(recs);
     }
